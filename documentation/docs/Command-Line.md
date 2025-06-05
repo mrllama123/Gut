@@ -112,3 +112,69 @@ ERROR:  Failed loading scene: res://samples3
 At:  main\main.cpp:1260
 ```
 I got this one when I accidentally put a space instead of an "=" after `-gselect`.
+
+
+## Running in CI
+
+Its possible to run this in ci using godot headless mode. You need to also run and import the project before you do e.g:
+
+```bash
+godot --headless --editor --quit --path $PWD --import
+```
+
+Then run cli:
+
+```bash
+godot --headless --path $PWD -d -s addons/gut/gut_cmdln.gd -gexit
+```
+
+**Note:** There is cases where the cli can hangs in debug mode due to the way GUT works  so would recommend to set a timeout in the ci 
+
+### Github actions example
+
+```yaml
+name: Godot CI
+
+on:
+  pull_request:
+    branches:
+      main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+       GODOT_SILENCE_ROOT_WARNING: 1
+       GODOT_VERSION: 4.3-stable
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache Godot download
+        id: cache-godot
+        uses: actions/cache@v3
+        with:
+          path: godot.zip
+          key: ${{ runner.os }}-godot-${{ env.GODOT_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-godot-${{ env.GODOT_VERSION }}
+
+      - name: Set up Godot (Godot Headless)
+        run: |
+          if [ ! -f godot.zip ]; then
+            wget https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip -O godot.zip
+          else
+            echo "godot.zip restored from cache."
+          fi
+          unzip godot.zip
+          # The binary name inside the zip is typically Godot_vX.Y.Z-stable_linux.arm64
+          # We rename it to godot for consistency
+          mv Godot_v${GODOT_VERSION}_linux.arm64 godot
+          chmod +x godot
+          echo "$PWD" >> $GITHUB_PATH # Add current directory (where godot is) to PATH
+      - name: GUT setup
+        # needs to import the project before running tests for reasons
+        run: godot --headless --editor --quit --path $PWD --import
+      - name: Run GUT tests
+        run: godot --headless --path $PWD -d -s addons/gut/gut_cmdln.gd -gexit
+
+```
