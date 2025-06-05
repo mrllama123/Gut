@@ -128,7 +128,7 @@ Then run cli:
 godot --headless --path $PWD -d -s addons/gut/gut_cmdln.gd -gexit
 ```
 
-**Note:** There is cases where the cli can hangs in debug mode due to the way GUT works  so would recommend to set a timeout in the ci 
+**NOTE** There is cases where the cli can hangs in debug mode due to the way GUT works  so would recommend to set a timeout in the ci 
 
 ### Github actions example
 
