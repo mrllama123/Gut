@@ -172,7 +172,6 @@ jobs:
           chmod +x godot
           echo "$PWD" >> $GITHUB_PATH # Add current directory (where godot is) to PATH
       - name: GUT setup
-        # needs to import the project before running tests for reasons
         run: godot --headless --editor --quit --path $PWD --import
       - name: Run GUT tests
         run: godot --headless --path $PWD -d -s addons/gut/gut_cmdln.gd -gexit
